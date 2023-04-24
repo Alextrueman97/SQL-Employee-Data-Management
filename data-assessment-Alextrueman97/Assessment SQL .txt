@@ -1,0 +1,84 @@
+#mysql -u root;
+
+CREATE database myhomes;
+
+USE myhomes;
+
+CREATE TABLE supervisor (supervisor_id INT AUTO_INCREMENT, first_name VARCHAR(25), last_name VARCHAR(25), 
+	CONSTRAINT supervisor_pk PRIMARY KEY (supervisor_id));
+	
+CREATE TABLE chief (chief_id INT AUTO_INCREMENT, first_name VARCHAR(25), last_name VARCHAR(25),
+	CONSTRAINT chief_pk PRIMARY KEY (chief_id)
+	);
+
+CREATE TABLE geographical_location (location_id INT AUTO_INCREMENT, area_name VARCHAR(30), chief_id INT NOT NULL,
+	CONSTRAINT location_pk PRIMARY KEY (location_id),
+	CONSTRAINT FOREIGN KEY chief_fk (chief_id) REFERENCES chief(chief_id) ON DELETE CASCADE ON UPDATE CASCADE
+	);
+	
+CREATE TABLE employee(employee_id INT AUTO_INCREMENT, first_name VARCHAR(25), last_name VARCHAR(25), supervisor_id INT DEFAULT NULL, chief_id INT DEFAULT NULL,
+	CONSTRAINT employee_pk PRIMARY KEY (employee_id),
+	CONSTRAINT FOREIGN KEY supervisor_fk (supervisor_id) REFERENCES supervisor(supervisor_id) ON DELETE CASCADE ON UPDATE CASCADE,
+	CONSTRAINT FOREIGN KEY chief2_fk (chief_id) REFERENCES chief(chief_id) ON DELETE CASCADE ON UPDATE CASCADE
+	);
+
+CREATE TABLE property (property_id INT AUTO_INCREMENT, property_postcode VARCHAR(7) NOT NULL, property_number INT, property_type VARCHAR(25) NOT NULL, location_id INT NOT NULL, sales_rep INT NOT NULL,
+	CONSTRAINT property_pk PRIMARY KEY (property_id),
+	CONSTRAINT FOREIGN KEY location_fk (location_id) REFERENCES geographical_location(location_id) ON DELETE CASCADE ON UPDATE CASCADE,
+	CONSTRAINT FOREIGN KEY sales_rep_fk (sales_rep) REFERENCES employee(employee_id) ON DELETE CASCADE ON UPDATE CASCADE
+	);
+
+CREATE TABLE client (client_id INT AUTO_INCREMENT, first_name VARCHAR(25), last_name VARCHAR(25), email_address VARCHAR(50) UNIQUE, employee_rep_id INT, property_id INT, geographical_location INT,
+	CONSTRAINT client_pk PRIMARY KEY (client_id),
+	CONSTRAINT FOREIGN KEY employee_rep_fk (employee_rep_id) REFERENCES employee(employee_id) ON DELETE CASCADE ON UPDATE CASCADE,
+	CONSTRAINT FOREIGN KEY property2_fk (property_id) REFERENCES property(property_id) ON DELETE CASCADE ON UPDATE CASCADE,
+	CONSTRAINT FOREIGN KEY geographical_location2_fk (geographical_location) REFERENCES geographical_location(location_id) ON DELETE CASCADE ON UPDATE CASCADE
+	);
+	
+
+INSERT INTO supervisor (first_name, last_name)
+	VALUES ('John','Smith'),('Greg','James'),('James','Hedge'),('Katie','Smith'),('Ayhan','Sez');
+
+INSERT INTO chief (first_name, last_name) 
+	Values ('Katie','Smith'),('Ayhan','Sez'),('Jacob','Housden'),('Nav','Singh'),('Sean','Bell');
+
+INSERT INTO geographical_location (area_name, chief_id)
+	VALUES ('Bexley',3),('Greenwich',1),('Lewisham',5),('Croydon',2),('Bromley',4);
+	
+INSERT INTO employee (first_name, last_name, supervisor_id,chief_id)
+	VALUES ('Katie','Smith',NULL,1),('Ayhan','Sez',NULL,2)
+
+INSERT INTO employee (first_name, last_name)
+	VALUES('James','Hedge'),('Greg','James'),('John','Smith')
+	
+INSERT INTO employee (first_name, last_name, supervisor_id,chief_id)
+	VALUES ('Jacob','Housden',1,3),('Nav','Singh',5,4),('Sean','Bell',3,5)
+	
+INSERT INTO employee(first_name, last_name, supervisor_id)
+	VALUES('Joshua','Housden',4),('William','Dean',2),('Ben','Whitehall',1),('Jamie','Lee',4),('Reece','Hyslop',2),('Craig','Brian',3);
+	
+INSERT INTO property (property_postcode, property_number, property_type, location_id, sales_rep)
+	VALUES ('DA7 5NT',5,'House',1,14),('SE4 3NP',224,'Appartment',3,10),('SE25 4KL',45,'Bungalow',4,4),('SE18 2FE',78,'Land',2,12),('SE20 3NX',99,'Commercial',5,15),
+	('DA7 2BX',225,'Appartment',1,11),('SE25 1JP',65,'House',4,8),('SE18 2KL',445,'Appartment',2,6),('SE20 4GJ',321,'Commercial',5,9),('SE4 8PT',87,'Bungalow',3,7);
+	
+INSERT INTO client (first_name, last_name, email_address, employee_rep_id, property_id, geographical_location)
+	VALUES ('Clancy','sherburne','c.shereburne@hotmail.com',10,3,3),('Prosper','Kipling','ProKip@gmail.com',6,9,2),('Chantal','Dale','chantald@aol.co.uk',12,5,2),('Freda','Pressley','pressley_f@outlook.com',7,11,3),
+	('Archer','Breckinridge','archyb@gmail.com',15,6,5),('Aveline','Barnes','avybar123@aol.com',8,8,4);
+	
+
+
+SELECT employee.first_name, employee.last_name, property.property_postcode, property.property_number, property.property_type, supervisor.first_name, supervisor.last_name
+FROM employee
+INNER JOIN property
+ON employee.employee_id = property.sales_rep
+INNER JOIN supervisor
+ON employee.supervisor_id = supervisor.supervisor_id
+ORDER BY employee.employee_id;
+
+SELECT client.first_name, client.last_name, geographical_location.area_name, chief.first_name, chief.last_name
+FROM client 
+INNER JOIN geographical_location
+ON client.geographical_location = geographical_location.location_id
+INNER JOIN chief
+ON chief.chief_id = geographical_location.chief_id
+ORDER BY client_id;
